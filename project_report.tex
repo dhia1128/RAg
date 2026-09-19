@@ -1,0 +1,254 @@
+﻿\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{longtable}
+
+\geometry{margin=1in}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{AI Document Q\&A Project Report}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\definecolor{codebg}{gray}{0.96}
+\definecolor{codeblue}{rgb}{0.12,0.38,0.74}
+\definecolor{codegreen}{rgb}{0.0,0.5,0.0}
+\definecolor{codered}{rgb}{0.7,0.0,0.0}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{codeblue}\bfseries,
+    stringstyle=\color{codegreen},
+    commentstyle=\color{codered},
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    showstringspaces=false,
+    tabsize=2
+}
+
+\begin{document}
+
+\title{AI Document Q\&A Project Report}
+\author{Generated from the project source code}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+This report examines a lightweight document question-answering application built with FastAPI, PostgreSQL, SQLAlchemy, and Ollama. The system allows users to upload text-based files, extract and store document content, divide long documents into smaller chunks, and ask natural-language questions about the uploaded material. The report explains the purpose of the project, describes the role of each major file, outlines the system architecture, details the data model and request flow, and evaluates the strengths and limitations of the implementation.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The project is a small but complete document question-answering system intended to demonstrate how a local, retrieval-oriented AI workflow can be built using open-source Python tools. The application accepts inputs such as \texttt{.txt}, \texttt{.pdf}, and \texttt{.docx} files, extracts the readable text, stores document metadata and content in PostgreSQL, and allows end users to ask questions that are answered using a local LLM served by Ollama.
+
+The design is intentionally simple and educational. It separates the user interface, backend API, service layer, database layer, and AI interaction, making it easier to understand how each component contributes to the overall workflow.
+
+\section{Project Objectives}
+The principal objectives of the project are as follows:
+\begin{itemize}[leftmargin=*]
+    \item enable document upload and text extraction from common file types;
+    \item persist document content and metadata in PostgreSQL;
+    \item split long documents into smaller chunks for processing and retrieval;
+    \item expose a simple REST API for document management and question answering;
+    \item provide a browser-based interface for users;
+    \item demonstrate a practical local AI workflow with Ollama.
+\end{itemize}
+
+\section{System Architecture}
+The application is organized into several clearly separated layers.
+
+\subsection{Frontend Layer}
+The browser interface is served from \texttt{static/index.html}. It provides the forms needed to upload a file and submit a question, and it displays the resulting answer in the browser.
+
+\subsection{Backend Layer}
+The backend is implemented in \texttt{app/main.py} using FastAPI. It exposes endpoints for health checking, listing documents, uploading files, and answering questions. The backend is responsible for validating requests, coordinating service calls, and returning structured responses.
+
+\subsection{Service Layer}
+The application logic resides in \texttt{app/services.py}. This layer manages file parsing, chunk generation, document persistence, retrieval, and communication with Ollama.
+
+\subsection{Persistence Layer}
+The persistence layer uses SQLAlchemy and PostgreSQL. It is configured in \texttt{app/database.py} and modeled in \texttt{app/models.py}.
+
+\subsection{AI Layer}
+The AI layer is implemented through local HTTP requests to Ollama. The backend sends both the question and relevant document context to the local model so that the answer is grounded in the uploaded content.
+
+\section{Project Structure}
+The repository contains the following main components:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{README.md} -- project overview and setup guidance;
+    \item \texttt{requirements.txt} -- Python dependency declarations;
+    \item \texttt{Dockerfile} -- container image definition;
+    \item \texttt{docker-compose.yml} -- multi-service orchestration for the app, database, and Ollama;
+    \item \texttt{app/} -- backend package containing routes, services, configuration, models, and schemas;
+    \item \texttt{static/index.html} -- frontend UI;
+    \item \texttt{.env} -- local environment configuration.
+\end{itemize}
+
+\section{Detailed File Analysis}
+
+\subsection{README.md}
+The README provides the project introduction, setup instructions, and usage guidance. It explains the architecture, lists the external tools required for execution, and documents the steps for running the application locally or through Docker. It is the main reference point for a new developer beginning work on the project.
+
+\subsection{requirements.txt}
+This file lists the project's Python dependencies. The application relies on FastAPI, Uvicorn, SQLAlchemy, Psycopg, python-dotenv, python-multipart, pypdf, python-docx, and httpx. These packages collectively cover the web framework, database integration, file parsing, environment management, and HTTP communication with Ollama.
+
+\subsection{Dockerfile}
+The Dockerfile creates a containerized deployment for the backend application. It starts from a Python 3.11 slim image, installs the dependencies from \texttt{requirements.txt}, copies the application source into the container, exposes port 8000, and launches the app with Uvicorn. This ensures the backend can be run reliably in a reproducible environment.
+
+\subsection{docker-compose.yml}
+The compose file defines the complete runtime environment for the project. It organizes the application into three services: the FastAPI app, the PostgreSQL database, and the Ollama service. Persistent volumes are configured so that database state and Ollama model files are retained between sessions. The file is important because it allows the application ecosystem to be started with a single command.
+
+\subsection{app/__init__.py}
+This file is minimal and simply identifies the \texttt{app} directory as a Python package. It does not contain significant business logic in the current state of the project.
+
+\subsection{app/config.py}
+The configuration module loads environment variables from the root-level \texttt{.env} file using \texttt{python-dotenv}. It defines application settings such as host, port, secret key, PostgreSQL credentials, Ollama endpoint, and the selected model name. Centralizing configuration in this file improves flexibility and reduces the risk of hard-coded values in the codebase.
+
+\subsection{app/database.py}
+The database module initializes the SQLAlchemy engine, defines the shared declarative base, and creates the session factory used by the application. It also contains the \texttt{init\_db()} function, which creates all database tables at application startup. The structure is standard and appropriate for a FastAPI application using SQLAlchemy.
+
+\subsection{app/models.py}
+This file defines the relational data model. The three core entities are:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Document} -- stores document metadata and the original content;
+    \item \texttt{DocumentChunk} -- stores chunked text segments for each document;
+    \item \texttt{Conversation} -- stores user questions and corresponding AI answers.
+\end{itemize}
+
+The schema is intentionally small but effective. It preserves raw document text, retains searchable chunks, and records interaction history for future analysis.
+
+\subsection{app/schemas.py}
+This module defines the request and response models used by FastAPI. Pydantic models validate incoming payloads and shape the JSON sent back to the client. The schemas include document metadata responses, upload responses, and the input/output contracts for the question-answering endpoint.
+
+\subsection{app/services.py}
+This is the core business-logic file of the project.
+
+\textbf{Document extraction}
+The \texttt{extract\_text()} method supports three file formats: \texttt{.txt}, \texttt{.pdf}, and \texttt{.docx}. Plain text files are decoded directly, PDF files are processed with \texttt{pypdf}, and DOCX files are processed with \texttt{python-docx}.
+
+\textbf{Chunk generation}
+The \texttt{chunk\_text()} method splits the document content into manageable pieces using a configurable chunk size and overlap. This is a common and effective strategy for retrieval-based systems because it preserves some local continuity between adjacent fragments.
+
+\textbf{Document creation}
+The \texttt{create\_document()} method builds a new document record, stores the original text, generates chunks, and saves each chunk in the database. The implementation uses SQLAlchemy session operations to maintain data consistency.
+
+\textbf{Document listing}
+The \texttt{list\_documents()} method retrieves documents sorted by creation time in descending order, allowing the UI to display the newest content first.
+
+\textbf{Question answering}
+The \texttt{ask\_question()} method is the center of the Q\&A workflow. If no document ID is supplied, it selects the most recent document. It then loads the document's chunks, prepares relevant context, sends the question and context to the local LLM, stores the result in the conversation table, and returns the answer.
+
+\textbf{Ollama integration}
+The helper method \texttt{\_call\_ollama()} sends an HTTP request to Ollama's \texttt{/api/generate} endpoint with a prompt that instructs the model to answer strictly from the provided document context. If Ollama is unavailable, the method raises a clear error explaining that the local service must be installed and running.
+
+\subsection{app/main.py}
+This is the application entry point. It defines the FastAPI routes and startup logic. The available endpoints include:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /} -- serves the frontend;
+    \item \texttt{GET /health} -- returns the health status;
+    \item \texttt{GET /documents} -- returns uploaded documents;
+    \item \texttt{POST /documents/upload} -- uploads a file and stores it;
+    \item \texttt{POST /ask} -- answers a question using the stored document context.
+\end{itemize}
+
+The upload endpoint reads the file content, validates the file, extracts text, creates a document entry, and returns a structured upload response. The ask endpoint validates the request, invokes the service logic, and returns the AI answer to the client.
+
+\subsection{static/index.html}
+This file implements the browser interface. It contains styling, forms, and JavaScript that interact with the backend API. The interface allows users to upload files, view the current document list, select a document ID, and submit questions. The client-side logic uses fetch requests to call the upload and ask endpoints and renders the result directly in the page.
+
+\section{Operational Workflow}
+The operational sequence of the application is straightforward:
+\begin{enumerate}[leftmargin=*]
+    \item The user opens the browser interface.
+    \item A document is uploaded through the frontend.
+    \item The backend extracts the document text and stores metadata and chunks in PostgreSQL.
+    \item The user submits a question.
+    \item The backend loads the relevant document chunks.
+    \item Those chunks are sent to Ollama along with the question.
+    \item Ollama generates a response based only on the supplied context.
+    \item The answer is returned to the frontend and displayed to the user.
+\end{enumerate}
+
+\section{Database Design}
+The database schema is intentionally uncomplicated and designed to support the project objectives. It contains three tables:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{documents} -- stores metadata and raw document content;
+    \item \texttt{document\_chunks} -- stores chunked content for retrieval;
+    \item \texttt{conversations} -- stores user prompts and model responses.
+\end{itemize}
+
+This design separates the original full document from derived chunk representations, which is useful in document-question-answer systems and makes the application easier to extend later.
+
+\section{Strengths of the Implementation}
+The current project exhibits several positive qualities:
+\begin{itemize}[leftmargin=*]
+    \item clear and readable code structure;
+    \item simple deployment via Docker and Docker Compose;
+    \item local AI inference without a paid cloud service;
+    \item consistent separation of concerns between frontend, backend, services, and persistence;
+    \item strong suitability for educational learning and prototype development.
+\end{itemize}
+
+\section{Limitations and Opportunities for Improvement}
+Although the application works as a prototype, it also has some limitations:
+\begin{itemize}[leftmargin=*]
+    \item document retrieval is based on chunk storage rather than semantic embeddings;
+    \item the frontend is lightweight and may benefit from a more modern UI framework;
+    \item file support is currently limited to text, PDF, and DOCX;
+    \item authentication and authorization are not implemented;
+    \item advanced features such as multi-turn chat, document deletion, and semantic search are not yet included.
+\end{itemize}
+
+Potential improvements would include adding embeddings, introducing vector search, enabling better conversation history, and building a richer admin interface.
+
+\section{Conclusion}
+This project demonstrates how a practical document Q\&A system can be built using a small set of modern Python technologies. By combining FastAPI, PostgreSQL, SQLAlchemy, and Ollama, the application provides a functional local AI workflow that is easy to understand, simple to deploy, and well suited for experimentation.
+
+The implementation successfully integrates document upload, text extraction, chunking, persistence, and question answering in a coherent architecture. It serves as a solid foundation for further development into a more advanced retrieval-augmented generation platform.
+
+\appendix
+\section{Appendix A: Environment Variables}
+The application relies on environment variables defined in the root-level \texttt{.env} file. These include the application name, host and port details, PostgreSQL connection parameters, Ollama configuration, and model settings. The configuration is centralized in \texttt{app/config.py}, which makes the project portable across local and containerized environments.
+
+\section{Appendix B: API Endpoints}
+The FastAPI backend exposes the following routes:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /} -- serves the frontend; 
+    \item \texttt{GET /health} -- returns application health information; 
+    \item \texttt{GET /documents} -- lists stored documents; 
+    \item \texttt{POST /documents/upload} -- uploads and stores a document; 
+    \item \texttt{POST /ask} -- asks a question about a selected document.
+\end{itemize}
+
+\section{Appendix C: Key Source Files}
+\begin{longtable}{p{0.22\textwidth} p{0.70\textwidth}}
+\textbf{File} & \textbf{Purpose} \\
+\hline
+\texttt{app/main.py} & Defines the FastAPI routes and request handlers \\
+\texttt{app/services.py} & Implements text extraction, chunking, retrieval, and Ollama interaction \\
+\texttt{app/models.py} & Stores the SQLAlchemy database schema \\
+\texttt{app/database.py} & Initializes database sessions and model tables \\
+\texttt{app/config.py} & Reads environment variables and sets runtime configuration \\
+\texttt{app/schemas.py} & Defines request and response models \\
+\texttt{static/index.html} & Provides the browser-based user interface \\
+\texttt{Dockerfile} & Builds the application container image \\
+\texttt{docker-compose.yml} & Starts the application stack \\
+\end{longtable}
+
+\end{document}

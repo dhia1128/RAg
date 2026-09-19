@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Document Q&A</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        color: #1f2937;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
+      }
+
+      .header {
+        padding: 32px 30px;
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        color: white;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+
+      .header-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .header p {
+        margin: 10px 0 0;
+        line-height: 1.6;
+        color: rgba(255,255,255,0.92);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.3);
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        padding: 30px;
+      }
+
+      .panel {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px;
+      }
+
+      h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      input, textarea, button {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        font-size: 1rem;
+      }
+
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      button {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+      }
+
+      .document-list {
+        margin-top: 18px;
+      }
+
+      .document-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+
+      .document-item button {
+        width: auto;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+
+      .response {
+        margin-top: 20px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #ecfdf5;
+        border: 1px solid #86efac;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+
+      .error {
+        background: #fef2f2;
+        border-color: #fca5a5;
+      }
+
+      .muted {
+        color: #64748b;
+        font-size: 0.95rem;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .info-box {
+        background: rgba(37, 99, 235, 0.06);
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        padding: 16px;
+      }
+
+      .info-box h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+
+      .info-box p {
+        margin: 0;
+        color: #475569;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 900px) {
+        .content,
+        .header-grid,
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <div class="header-grid">
+            <div>
+              <span class="badge">AI + FastAPI + PostgreSQL</span>
+              <h1 style="margin-top: 16px;">AI Document Q&A</h1>
+              <p>
+                Upload your documents, store them securely in PostgreSQL, and ask questions to a local
+                LLM powered by Ollama. This solution helps you turn files into a searchable AI assistant without
+                needing an external API key.
+              </p>
+            </div>
+            <div class="info-grid">
+              <div class="info-box">
+                <h3>FastAPI</h3>
+                <p>Modern Python backend with clean REST endpoints.</p>
+              </div>
+              <div class="info-box">
+                <h3>PostgreSQL</h3>
+                <p>Reliable storage for uploaded files and document chunks.</p>
+              </div>
+              <div class="info-box">
+                <h3>Local AI</h3>
+                <p>Runs with Ollama, so you can test AI locally for free.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content">
+          <div>
+            <div class="panel">
+              <h2>Upload document</h2>
+              <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="fileInput" name="file" required />
+                <button type="submit">Upload document</button>
+              </form>
+            </div>
+
+            <div class="panel" style="margin-top: 24px;">
+              <h2>Ask a question</h2>
+              <form id="askForm">
+                <input type="number" id="documentId" placeholder="Choose a document ID" />
+                <textarea id="question" placeholder="Type your question here..."></textarea>
+                <button type="submit">Ask question</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Uploaded documents</h2>
+            <p class="muted">Select a document ID from the list below or enter it manually.</p>
+            <div id="documentList" class="document-list"></div>
+            <div id="result" class="response" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const uploadForm = document.getElementById('uploadForm');
+      const askForm = document.getElementById('askForm');
+      const resultBox = document.getElementById('result');
+      const documentList = document.getElementById('documentList');
+      const documentIdInput = document.getElementById('documentId');
+
+      function showResult(text, isError = false) {
+        resultBox.style.display = 'block';
+        resultBox.classList.toggle('error', isError);
+        resultBox.textContent = text;
+      }
+
+      async function loadDocuments() {
+        try {
+          const response = await fetch('/documents');
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.detail || 'Unable to load documents');
+          }
+
+          if (!data.length) {
+            documentList.innerHTML = '<p class="muted">No documents uploaded yet.</p>';
+            return;
+          }
+
+          documentList.innerHTML = data
+            .map(
+              (doc) => `
+                <div class="document-item">
+                  <div>
+                    <strong>${doc.file_name}</strong><br />
+                    <span class="muted">ID: ${doc.id} • ${doc.content_type}</span>
+                  </div>
+                  <button type="button" data-id="${doc.id}">Use</button>
+                </div>
+              `
+            )
+            .join('');
+
+          documentList.querySelectorAll('button[data-id]').forEach((button) => {
+            button.addEventListener('click', () => {
+              documentIdInput.value = button.dataset.id;
+              showResult(`Selected document ID: ${button.dataset.id}`);
+            });
+          });
+        } catch (error) {
+          documentList.innerHTML = `<p class="muted">${error.message}</p>`;
+        }
+      }
+
+      uploadForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const fileInput = document.getElementById('fileInput');
+
+        if (!fileInput.files[0]) {
+          showResult('Please choose a file first.', true);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+          const response = await fetch('/documents/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.detail || 'Upload failed');
+          }
+
+          showResult(`Upload successful!\nDocument ID: ${data.document_id}\nChunks created: ${data.chunks_created}`);
+          documentIdInput.value = data.document_id;
+          fileInput.value = '';
+          await loadDocuments();
+        } catch (error) {
+          showResult(error.message, true);
+        }
+      });
+
+      askForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const documentId = document.getElementById('documentId').value;
+        const question = document.getElementById('question').value;
+
+        if (!question.trim()) {
+          showResult('Please enter a question.', true);
+          return;
+        }
+
+        try {
+          const response = await fetch('/ask', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              question,
+              document_id: documentId ? Number(documentId) : null,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.detail || 'Question failed');
+          }
+
+          showResult(`Question: ${data.question}\n\nAnswer: ${data.answer}`);
+        } catch (error) {
+          showResult(error.message, true);
+        }
+      });
+
+      loadDocuments();
+    </script>
+  </body>
+</html>
