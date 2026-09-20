@@ -54,29 +54,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 3. Configure environment variables
 
-Edit the `.env` file with your local PostgreSQL settings.
-
-Example:
-
-```env
-APP_NAME=AI Document Q&A
-APP_ENV=development
-SECRET_KEY=change-me-in-production
-HOST=0.0.0.0
-PORT=8000
-
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=docqa_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_password
-DATABASE_URL=postgresql+psycopg://postgres:your_password@localhost:5432/docqa_db
-
-OPENAI_API_KEY=
-OPENAI_MODEL=llama3.2
-```
 
 ### 4. Start PostgreSQL
 
