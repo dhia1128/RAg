@@ -1,0 +1,11 @@
+.git
+.venv
+__pycache__
+*.py[cod]
+.env
+.env.*
+.vscode
+*.db
+project_report.tex
+project_summary.md
+README.md
